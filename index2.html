@@ -74,9 +74,6 @@
       ball.style.animationDuration = randomDuration + 's';
       gameContainer.appendChild(ball);
 
-      // Флаг, что шарик еще не пересек зону кошки
-      ball.crossed = false;
-
       return ball;
     }
 
@@ -116,19 +113,22 @@
     function gameLoop() {
       const ball = createBall();
 
-      // Проверяем, пересек ли шарик зону кошки
-      ball.addEventListener('animationiteration', () => {
-        if (!ball.crossed && checkScoreZone(ball)) {
+      // Запускаем проверку столкновения с интервалом
+      const checkInterval = setInterval(() => {
+        if (checkScoreZone(ball)) {
           score++;
           scoreValue.textContent = score;
-          ball.crossed = true;
+          clearInterval(checkInterval); // Останавливаем проверку
           ball.remove();
         }
-      });
+      }, 20); // Проверяем каждые 20 миллисекунд
 
+      // Если шарик долетел до конца, удаляем его и останавливаем проверку
       ball.addEventListener('animationend', () => {
+        clearInterval(checkInterval);
         ball.remove();
       });
+
 
       setTimeout(gameLoop, Math.random() * 1000 + 500);
     }
