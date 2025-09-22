@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Гномик и Шарики</title>
+  <style>
+    #game-container {
+      width: 800px;
+      height: 600px;
+      position: relative;
+      border: 1px solid black;
+      overflow: hidden;
+      margin: 0 auto; /* Центрируем контейнер */
+    }
+
+    #gnome {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px; /* Уменьшаем размер гномика */
+      height: auto;
+      z-index: 2; /*  Чтобы гномик был над шариками */
+    }
+
+    .ball {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: red;
+      top: 0;
+      animation: fall linear;
+      z-index: 1; /*  Чтобы шарики были под гномиком */
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh);
+      }
+    }
+
+    #score {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="score">Счет: <span id="score-value">0</span></div>
+
+  <div id="game-container">
+    <img id="gnome" src="gnome.png" alt="Гномик">
+  </div>
+
+  <script>
+    const gameContainer = document.getElementById('game-container');
+    const gnome = document.getElementById('gnome');
+    const scoreValue = document.getElementById('score-value');
+
+    let gnomePosition = 0;
+    const moveSpeed = 10;
+    let score = 0;
+
+    // Функция для создания шарика
+    function createBall() {
+      const ball = document.createElement('div');
+      ball.classList.add('ball');
+
+      // Рандомная позиция по горизонтали
+      const randomX = Math.random() * (gameContainer.offsetWidth - 20); // 20 - ширина шарика
+      ball.style.left = randomX + 'px';
+
+      // Рандомная скорость падения (немного, чтобы не было слишком однообразно)
+      const randomDuration = Math.random() * 2 + 3; // от 3 до 5 секунд
+      ball.style.animationDuration = randomDuration + 's';
+
+      gameContainer.appendChild(ball);
+
+      // Удаление шарика после завершения анимации
+      ball.addEventListener('animationend', () => {
+        ball.remove();
+      });
+
+      return ball;
+    }
+
+    // Функция для проверки столкновения
+    function checkCollision(ball) {
+      const gnomeRect = gnome.getBoundingClientRect();
+      const ballRect = ball.getBoundingClientRect();
+
+      return !(gnomeRect.right < ballRect.left ||
+               gnomeRect.left > ballRect.right ||
+               gnomeRect.bottom < ballRect.top ||
+               gnomeRect.top > ballRect.bottom);
+    }
+
+
+    // Обработчик нажатий клавиш
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') {
+        gnomePosition += moveSpeed;
+      } else if (event.key === 'ArrowLeft') {
+        gnomePosition -= moveSpeed;
+      }
+
+      // Ограничение движения
+      const containerWidth = gameContainer.offsetWidth;
+      const gnomeWidth = gnome.offsetWidth;
+      const minPosition = -gnomeWidth / 2;
+      const maxPosition = containerWidth - gnomeWidth / 2;
+
+      gnomePosition = Math.max(minPosition, Math.min(gnomePosition, maxPosition));
+      gnome.style.left = gnomePosition + 'px';
+      gnome.style.transform = 'translateX(0)';
+
+    });
+
+
+    // Основной игровой цикл
+    function gameLoop() {
+      const ball = createBall();
+
+      // Проверка столкновений с небольшой задержкой, чтобы шарик успел создаться
+      setTimeout(() => {
+        if (checkCollision(ball)) {
+          score++;
+          scoreValue.textContent = score;
+          ball.remove(); // Удаляем шарик после столкновения
+        }
+      }, 50); // Небольшая задержка
+
+      // Создаем новый шарик через случайный интервал
+      setTimeout(gameLoop, Math.random() * 1000 + 500); // от 0.5 до 1.5 секунд
+    }
+
+
+    // Начинаем игру
+    gameLoop();
+
+  </script>
+</body>
+</html>
