@@ -24,10 +24,10 @@
 
     .ball {
       position: absolute;
-      width: 80px;
-      height: 80px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      background-color: pink;
+      background-color: red;
       top: 0;
       animation: fall linear;
       z-index: 1;
@@ -62,6 +62,8 @@
     let catPosition = 0;
     const moveSpeed = 15;
     let score = 0;
+    const catHeight = 40; // Предполагаемая высота кошки (равна font-size)
+
 
     function createBall() {
       const ball = document.createElement('div');
@@ -79,15 +81,26 @@
       return ball;
     }
 
-    function checkCollision(ball) {
-      const catRect = cat.getBoundingClientRect();
-      const ballRect = ball.getBoundingClientRect();
 
-      return !(catRect.right < ballRect.left ||
-               catRect.left > ballRect.right ||
-               catRect.bottom < ballRect.top ||
-               catRect.top > ballRect.bottom);
+    //  Функция, проверяющая, пересек ли шарик траекторию кошки.
+    function checkScoreZone(ball) {
+      const ballRect = ball.getBoundingClientRect();
+      const catRect = cat.getBoundingClientRect();
+
+      //  Высота линии, где находится кошка (bottom кошки)
+      const catLineY = catRect.bottom;
+
+      //  Проверяем, что шарик находится в зоне кошки по Y-координате.
+      // Шарик должен быть ниже верхней границы кошки и не ниже нижней границы.
+      const isInScoreZoneY = ballRect.top <= catLineY && ballRect.bottom >= (catLineY - catHeight) ;
+
+      //  Проверяем, что шарик находится в зоне кошки по X-координате.
+      //Шарик должен находиться в пределах левой и правой границы кошки
+      const isInScoreZoneX = ballRect.right > catRect.left && ballRect.left < catRect.right;
+
+      return isInScoreZoneY;
     }
+
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'ArrowRight') {
@@ -107,23 +120,23 @@
     });
 
     function gameLoop() {
-      const ball = createBall(); // Создаем шарик
+      const ball = createBall();
 
-      const collisionCheck = () => {
-          if (checkCollision(ball)) {
-            score++;
-            scoreValue.textContent = score;
-            ball.remove(); // Удаляем шарик после начисления очка
-          }
-      }
-
-      ball.addEventListener('animationiteration', collisionCheck);
-      ball.addEventListener('animationstart', collisionCheck);
-      ball.addEventListener('animationend', () => {
-        ball.removeEventListener('animationiteration', collisionCheck); //Remove event listener
+      ball.addEventListener('animationiteration', () => { //Check iteration
+        if (checkScoreZone(ball)) {
+          score++;
+          scoreValue.textContent = score;
+          ball.remove();
+        }
       });
 
-
+      ball.addEventListener('animationstart', () => {  // Check start
+        if (checkScoreZone(ball)) {
+          score++;
+          scoreValue.textContent = score;
+          ball.remove();
+        }
+      });
 
       setTimeout(gameLoop, Math.random() * 1000 + 500);
     }
@@ -133,4 +146,3 @@
   </script>
 </body>
 </html>
-
