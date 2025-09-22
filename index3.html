@@ -1,15 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Кошечка и Шарики</title>
+  <title>Кошечка и Мороженки</title>
   <style>
+    /* Общий градиентный фон страницы */
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      user-select: none;
+    }
+
+    /* Контейнер игры с градиентным фоном */
     #game-container {
       width: 800px;
       height: 600px;
       position: relative;
-      border: 1px solid black;
+      border-radius: 20px;
       overflow: hidden;
-      margin: 0 auto; /* Центрируем контейнер */
+      margin: 20px auto;
+      /* Красивый градиентный фон */
+      background: linear-gradient(180deg, #ff9a9e 0%, #fad0c4 50%, #fad0c4 100%);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      border: 2px solid #ff6f91;
     }
 
     #cat {
@@ -20,46 +37,76 @@
       font-size: 40px;
       z-index: 2;
       color: #333;
+      user-select: none;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
     }
 
-    .ball {
+    .ice-cream {
       position: absolute;
-      width: 60px; /* Увеличиваем размер шарика в 3 раза */
-      height: 60px; /* Увеличиваем размер шарика в 3 раза */
-      border-radius: 50%;
-      /* Ярко-розовый градиент */
-      background: linear-gradient(to bottom, #FF69B4, #FF1493);
+      width: 60px;
+      height: 60px;
+      font-size: 45px; /* Увеличиваем размер эмодзи */
       top: 0;
       animation: fall linear;
       z-index: 1;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* Тень для эмодзи */
     }
 
     @keyframes fall {
       to {
-        transform: translateY(calc(100vh + 60px)); /* Шарики уходят за границу */
+        transform: translateY(calc(100vh + 60px)); /* Мороженки уходят за границу */
       }
     }
 
     #score {
       text-align: center;
-      font-size: 24px;
-      margin-bottom: 10px;
+      font-size: 28px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+      margin-top: 15px;
+      user-select: none;
     }
 
     #controls {
       text-align: center;
       margin-top: 20px;
+      user-select: none;
     }
 
     .button {
-      padding: 10px 20px;
-      font-size: 18px;
-      background-color: #4CAF50;
+      padding: 12px 25px;
+      font-size: 20px;
+      background-color: #ff2d85;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 30px;
       cursor: pointer;
-      margin: 0 10px;
+      margin: 0 15px;
+      box-shadow: 0 5px 15px rgba(255,45,133,0.6);
+      transition: background-color 0.3s ease;
+      user-select: none;
+      outline: none;
+    }
+
+    .button:hover,
+    .button:active {
+      background-color: #ff1a6f;
+    }
+
+    /* Для мобильных устройств увеличим кнопки */
+    @media (max-width: 500px) {
+      #game-container {
+        width: 95vw;
+        height: 70vh;
+      }
+      .button {
+        font-size: 24px;
+        padding: 15px 30px;
+        margin: 0 10px;
+      }        font-size: 30px;
+      }
+
     }
   </style>
 </head>
@@ -84,37 +131,36 @@
     const rightButton = document.getElementById('right-button');
 
     let catPosition = 0;
-    const moveSpeed = 25;
+    const moveSpeed = 15;
     let score = 0;
-    const catHeight = 60; // Высота кошки (font-size)
+    const catHeight = 40; // Высота кошки (font-size)
 
-    function createBall() {
-      const ball = document.createElement('div');
-      ball.classList.add('ball');
+    const iceCreamEmojis = ["🍦", "🍧", "🍨", "😋"]; // Список эмодзи мороженого
+
+
+    function createIceCream() {
+      const iceCream = document.createElement('div');
+      iceCream.classList.add('ice-cream');
+      iceCream.textContent = iceCreamEmojis[Math.floor(Math.random() * iceCreamEmojis.length)]; // Выбираем случайное мороженое
       const randomX = Math.random() * (gameContainer.offsetWidth - 60);
-      ball.style.left = randomX + 'px';
+      iceCream.style.left = randomX + 'px';
       const randomDuration = Math.random() * 2 + 3;
-      ball.style.animationDuration = randomDuration + 's';
-      gameContainer.appendChild(ball);
-      // Устанавливаем обработчик события здесь
-      ball.addEventListener('animationend', () => {
-        ball.remove();
+      iceCream.style.animationDuration = randomDuration + 's';
+      gameContainer.appendChild(iceCream);
+      iceCream.addEventListener('animationend', () => {
+        iceCream.remove();
       });
-      return ball;
+      return iceCream;
     }
 
-    function checkScoreZone(ball) {
-      const ballRect = ball.getBoundingClientRect();
+    function checkScoreZone(iceCream) {
+      const iceCreamRect = iceCream.getBoundingClientRect();
       const catRect = cat.getBoundingClientRect();
 
-      // Нижняя линия кошки
       const catLineY = catRect.bottom;
 
-      // Проверка по вертикали: шарик пересекает зону кошки
-      const isInScoreZoneY = ballRect.top <= catLineY && ballRect.bottom >= (catLineY - catHeight);
-
-      // Проверка по горизонтали: шарик в пределах ширины кошки
-      const isInScoreZoneX = ballRect.right > catRect.left && ballRect.left < catRect.right;
+      const isInScoreZoneY = iceCreamRect.top <= catLineY && iceCreamRect.bottom >= (catLineY - catHeight);
+      const isInScoreZoneX = iceCreamRect.right > catRect.left && iceCreamRect.left < catRect.right;
 
       return isInScoreZoneY && isInScoreZoneX;
     }
@@ -145,47 +191,40 @@
     });
 
     leftButton.addEventListener('touchstart', (event) => {
-      event.preventDefault(); // Предотвращаем скролл страницы при нажатии
+      event.preventDefault();
       moveCat('left');
     });
-
-    leftButton.addEventListener('mousedown', (event) => {
-        moveCat('left');
-    });
-
+    leftButton.addEventListener('mousedown', () => moveCat('left'));
 
     rightButton.addEventListener('touchstart', (event) => {
-      event.preventDefault(); // Предотвращаем скролл страницы при нажатии
+      event.preventDefault();
       moveCat('right');
     });
-
-    rightButton.addEventListener('mousedown', (event) => {
-        moveCat('right');
-    });
-
+    rightButton.addEventListener('mousedown', () => moveCat('right'));
 
     function gameLoop() {
-      const ball = createBall();
+      const iceCream = createIceCream();
 
       const checkInterval = setInterval(() => {
-        if (checkScoreZone(ball)) {
+        if (checkScoreZone(iceCream)) {
           score++;
           scoreValue.textContent = score;
           clearInterval(checkInterval);
-          ball.remove();
+          iceCream.remove();
         }
       }, 20);
 
-      ball.addEventListener('animationend', () => {
+      iceCream.addEventListener('animationend', () => {
         clearInterval(checkInterval);
-        ball.remove();
+        iceCream.remove();
       });
 
       setTimeout(gameLoop, Math.random() * 1000 + 500);
     }
 
     gameLoop();
-
   </script>
 </body>
 </html>
+      #cat {
+        
