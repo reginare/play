@@ -24,10 +24,11 @@
 
     .ball {
       position: absolute;
-      width: 20px;
-      height: 20px;
+      width: 60px; /* Увеличиваем размер шарика в 3 раза */
+      height: 60px; /* Увеличиваем размер шарика в 3 раза */
       border-radius: 50%;
-      background-color: red;
+      /* Ярко-розовый градиент */
+      background: linear-gradient(to bottom, #FF69B4, #FF1493);
       top: 0;
       animation: fall linear;
       z-index: 1;
@@ -62,42 +63,38 @@
     let catPosition = 0;
     const moveSpeed = 15;
     let score = 0;
-    const catHeight = 40; // Высота кошки
-
+    const catHeight = 40; // Высота кошки (font-size)
 
     function createBall() {
       const ball = document.createElement('div');
       ball.classList.add('ball');
-      const randomX = Math.random() * (gameContainer.offsetWidth - 20);
+      const randomX = Math.random() * (gameContainer.offsetWidth - 60); // 60 - ширина шарика
       ball.style.left = randomX + 'px';
       const randomDuration = Math.random() * 2 + 3;
       ball.style.animationDuration = randomDuration + 's';
       gameContainer.appendChild(ball);
 
-      // Добавляем признак того, что шарик еще не пересек зону кошки.
+      // Флаг, что шарик еще не пересек зону кошки
       ball.crossed = false;
 
       return ball;
     }
 
-
     function checkScoreZone(ball) {
       const ballRect = ball.getBoundingClientRect();
       const catRect = cat.getBoundingClientRect();
 
-      // Высота линии, где находится кошка
+      // Нижняя линия кошки
       const catLineY = catRect.bottom;
 
-      // Проверяем, находится ли шарик в зоне кошки по Y-координате.
+      // Проверка по вертикали: шарик пересекает зону кошки
       const isInScoreZoneY = ballRect.top <= catLineY && ballRect.bottom >= (catLineY - catHeight);
 
-      // Проверяем, находится ли шарик в зоне кошки по X-координате.
+      // Проверка по горизонтали: шарик в пределах ширины кошки
       const isInScoreZoneX = ballRect.right > catRect.left && ballRect.left < catRect.right;
 
       return isInScoreZoneY && isInScoreZoneX;
     }
-
-
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'ArrowRight') {
@@ -119,19 +116,18 @@
     function gameLoop() {
       const ball = createBall();
 
-      //  Проверяем, пересек ли шарик траекторию кошки
+      // Проверяем, пересек ли шарик зону кошки
       ball.addEventListener('animationiteration', () => {
-        if (!ball.crossed && checkScoreZone(ball)) { //Проверяем чтобы очко начислилось только один раз
+        if (!ball.crossed && checkScoreZone(ball)) {
           score++;
           scoreValue.textContent = score;
-          ball.crossed = true; // Запоминаем, что шарик уже пересек зону
+          ball.crossed = true;
           ball.remove();
         }
-
       });
 
       ball.addEventListener('animationend', () => {
-         ball.remove();  // удаляем шарик при завершении анимации, даже если он не принес очко
+        ball.remove();
       });
 
       setTimeout(gameLoop, Math.random() * 1000 + 500);
