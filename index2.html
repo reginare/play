@@ -3,13 +3,30 @@
 <head>
   <title>Кошечка и Шарики</title>
   <style>
+    /* Общий градиентный фон страницы */
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      user-select: none;
+    }
+
+    /* Контейнер игры с градиентным фоном */
     #game-container {
       width: 800px;
       height: 600px;
       position: relative;
-      border: 1px solid black;
+      border-radius: 20px;
       overflow: hidden;
-      margin: 0 auto;
+      margin: 20px auto;
+      /* Красивый градиентный фон */
+      background: linear-gradient(180deg, #ff9a9e 0%, #fad0c4 50%, #fad0c4 100%);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      border: 2px solid #ff6f91;
     }
 
     #cat {
@@ -20,6 +37,8 @@
       font-size: 40px;
       z-index: 2;
       color: #333;
+      user-select: none;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
     }
 
     .ball {
@@ -28,22 +47,76 @@
       height: 60px; /* Увеличиваем размер шарика в 3 раза */
       border-radius: 50%;
       /* Ярко-розовый градиент */
-      background: linear-gradient(to bottom, #FF69B4, #FF1493);
+      background: linear-gradient(145deg, #ff5ca3, #ff2d85);
       top: 0;
       animation: fall linear;
       z-index: 1;
+      box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.7),
+        0 4px 6px rgba(255,45,133,0.6);
     }
 
     @keyframes fall {
       to {
-        transform: translateY(100vh);
+        transform: translateY(calc(100vh + 60px)); /* Шарики уходят за границу */
       }
     }
 
     #score {
       text-align: center;
-      font-size: 24px;
-      margin-bottom: 10px;
+      font-size: 28px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+      margin-top: 15px;
+      user-select: none;
+    }
+
+    #controls {
+      text-align: center;
+      margin-top: 20px;
+      user-select: none;
+    }
+
+    .button {
+      padding: 12px 25px;
+      font-size: 20px;
+      background-color: #ff2d85;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      margin: 0 15px;
+      box-shadow: 0 5px 15px rgba(255,45,133,0.6);
+      transition: background-color 0.3s ease;
+      user-select: none;
+      outline: none;
+    }
+
+    .button:hover,
+    .button:active {
+      background-color: #ff1a6f;
+    }
+
+    /* Для мобильных устройств увеличим кнопки */
+    @media (max-width: 500px) {
+      #game-container {
+
+              width: 95vw;
+        height: 70vh;
+      }
+      .button {
+        font-size: 24px;
+        padding: 15px 30px;
+        margin: 0 10px;
+      }
+      #cat {
+        font-size: 30px;
+      }
+      .ball {
+        width: 45px;
+        height: 45px;
+      }
     }
   </style>
 </head>
@@ -55,10 +128,17 @@
     <div id="cat">🐈</div>
   </div>
 
+  <div id="controls">
+    <button class="button" id="left-button">Влево</button>
+    <button class="button" id="right-button">Вправо</button>
+  </div>
+
   <script>
     const gameContainer = document.getElementById('game-container');
     const cat = document.getElementById('cat');
     const scoreValue = document.getElementById('score-value');
+    const leftButton = document.getElementById('left-button');
+    const rightButton = document.getElementById('right-button');
 
     let catPosition = 0;
     const moveSpeed = 15;
@@ -68,12 +148,14 @@
     function createBall() {
       const ball = document.createElement('div');
       ball.classList.add('ball');
-      const randomX = Math.random() * (gameContainer.offsetWidth - 60); // 60 - ширина шарика
+      const randomX = Math.random() * (gameContainer.offsetWidth - 60);
       ball.style.left = randomX + 'px';
       const randomDuration = Math.random() * 2 + 3;
       ball.style.animationDuration = randomDuration + 's';
       gameContainer.appendChild(ball);
-
+      ball.addEventListener('animationend', () => {
+        ball.remove();
+      });
       return ball;
     }
 
@@ -81,22 +163,18 @@
       const ballRect = ball.getBoundingClientRect();
       const catRect = cat.getBoundingClientRect();
 
-      // Нижняя линия кошки
       const catLineY = catRect.bottom;
 
-      // Проверка по вертикали: шарик пересекает зону кошки
       const isInScoreZoneY = ballRect.top <= catLineY && ballRect.bottom >= (catLineY - catHeight);
-
-      // Проверка по горизонтали: шарик в пределах ширины кошки
       const isInScoreZoneX = ballRect.right > catRect.left && ballRect.left < catRect.right;
 
       return isInScoreZoneY && isInScoreZoneX;
     }
 
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'ArrowRight') {
+    function moveCat(direction) {
+      if (direction === 'right') {
         catPosition += moveSpeed;
-      } else if (event.key === 'ArrowLeft') {
+      } else if (direction === 'left') {
         catPosition -= moveSpeed;
       }
 
@@ -108,33 +186,49 @@
       catPosition = Math.max(minPosition, Math.min(catPosition, maxPosition));
       cat.style.left = catPosition + 'px';
       cat.style.transform = 'translateX(0)';
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') {
+        moveCat('right');
+      } else if (event.key === 'ArrowLeft') {
+        moveCat('left');
+      }
     });
+
+    leftButton.addEventListener('touchstart', (event) => {
+      event.preventDefault();
+      moveCat('left');
+    });
+    leftButton.addEventListener('mousedown', () => moveCat('left'));
+
+    rightButton.addEventListener('touchstart', (event) => {
+      event.preventDefault();
+      moveCat('right');
+    });
+    rightButton.addEventListener('mousedown', () => moveCat('right'));
 
     function gameLoop() {
       const ball = createBall();
 
-      // Запускаем проверку столкновения с интервалом
       const checkInterval = setInterval(() => {
         if (checkScoreZone(ball)) {
           score++;
           scoreValue.textContent = score;
-          clearInterval(checkInterval); // Останавливаем проверку
+          clearInterval(checkInterval);
           ball.remove();
         }
-      }, 20); // Проверяем каждые 20 миллисекунд
+      }, 20);
 
-      // Если шарик долетел до конца, удаляем его и останавливаем проверку
       ball.addEventListener('animationend', () => {
         clearInterval(checkInterval);
         ball.remove();
       });
 
-
       setTimeout(gameLoop, Math.random() * 1000 + 500);
     }
 
     gameLoop();
-
   </script>
 </body>
 </html>
