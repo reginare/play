@@ -17,9 +17,9 @@
       bottom: 0;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 40px; /* Размер кошечки */
+      font-size: 40px;
       z-index: 2;
-      color: #333; /* Цвет кошечки */
+      color: #333;
     }
 
     .ball {
@@ -60,7 +60,7 @@
     const scoreValue = document.getElementById('score-value');
 
     let catPosition = 0;
-    const moveSpeed = 15; // Увеличиваем скорость для символа
+    const moveSpeed = 15;
     let score = 0;
 
     function createBall() {
@@ -97,10 +97,9 @@
       }
 
       const containerWidth = gameContainer.offsetWidth;
-      const catWidth = cat.offsetWidth; // Получаем ширину элемента cat
+      const catWidth = cat.offsetWidth;
       const minPosition = -catWidth / 2;
       const maxPosition = containerWidth - catWidth / 2;
-
 
       catPosition = Math.max(minPosition, Math.min(catPosition, maxPosition));
       cat.style.left = catPosition + 'px';
@@ -108,15 +107,23 @@
     });
 
     function gameLoop() {
-      const ball = createBall();
+      const ball = createBall(); // Создаем шарик
 
-      setTimeout(() => {
-        if (checkCollision(ball)) {
-          score++;
-          scoreValue.textContent = score;
-          ball.remove();
-        }
-      }, 50);
+      const collisionCheck = () => {
+          if (checkCollision(ball)) {
+            score++;
+            scoreValue.textContent = score;
+            ball.remove(); // Удаляем шарик после начисления очка
+          }
+      }
+
+      ball.addEventListener('animationiteration', collisionCheck);
+      ball.addEventListener('animationstart', collisionCheck);
+      ball.addEventListener('animationend', () => {
+        ball.removeEventListener('animationiteration', collisionCheck); //Remove event listener
+      });
+
+
 
       setTimeout(gameLoop, Math.random() * 1000 + 500);
     }
@@ -126,3 +133,4 @@
   </script>
 </body>
 </html>
+
