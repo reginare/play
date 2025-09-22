@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Кошечка и Шарики</title>
+  <style>
+    #game-container {
+      width: 800px;
+      height: 600px;
+      position: relative;
+      border: 1px solid black;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+
+    #cat {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 40px;
+      z-index: 2;
+      color: #333;
+    }
+
+    .ball {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(to bottom, #FF69B4, #FF1493);
+      top: 0;
+      animation: fall linear;
+      z-index: 1;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh);
+      }
+    }
+
+    #score {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    #controls {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 0 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="score">Счет: <span id="score-value">0</span></div>
+
+  <div id="game-container">
+    <div id="cat">🐈</div>
+  </div>
+
+  <div id="controls">
+    <button class="button" id="left-button">Влево</button>
+    <button class="button" id="right-button">Вправо</button>
+  </div>
+
+  <script>
+    const gameContainer = document.getElementById('game-container');
+    const cat = document.getElementById('cat');
+    const scoreValue = document.getElementById('score-value');
+    const leftButton = document.getElementByIdleft-button');
+    const rightButton = document.getElementById('right-button');
+
+    let catPosition = 0;
+    const moveSpeed = 15;
+    let score = 0;
+    const catHeight = 40; // Высота кошки (font-size)
+
+    function createBall() {
+      const ball = document.createElement('div');
+      ball.classList.add('ball');
+      const randomX = Math.random() * (gameContainer.offsetWidth - 60); // 60 - ширина шарика
+      ball.style.left = randomX + 'px';
+      const randomDuration = Math.random() * 2 + 3;
+      ball.style.animationDuration = randomDuration + 's';
+      gameContainer.appendChild(ball);
+
+      return ball;
+    }
+
+    function checkScoreZone(ball) {
+      const ballRect = ball.getBoundingClientRect();
+      const catRect = cat.getBoundingClientRect();
+
+      // Нижняя линия кошки
+          const catLineY = catRect.bottom;
+
+      // Проверка по вертикали: шарик пересекает зону кошки
+      const isInScoreZoneY = ballRect.top <= catLineY && ballRect.bottom >= (catLineY - catHeight);
+
+      // Проверка по горизонтали: шарик в пределах ширины кошки
+      const isInScoreZoneX = ballRect.right > catRect.left && ballRect.left < catRect.right;
+
+      return isInScoreZoneY && isInScoreZoneX;
+    }
+
+    function moveCat(direction) {
+      if (direction === 'right') {
+        catPosition += moveSpeed;
+      } else if (direction === 'left') {
+        catPosition -= moveSpeed;
+      }
+
+      const containerWidth = gameContainer.offsetWidth;
+      const catWidth = cat.offsetWidth;
+      const minPosition = -catWidth / 2;
+      const maxPosition = containerWidth - catWidth / 2;
+
+      catPosition = Math.max(minPosition, Math.min(catPosition, maxPosition));
+      cat.style.left = catPosition + 'px';
+      cat.style.transform = 'translateX(0)';
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') {
+        moveCat('right');
+      } else if (event.key === 'ArrowLeft') {
+        moveCat('left');
+      }
+    });
+
+
+    leftButton.addEventListener('touchstart', (event) => {
+      event.preventDefault();
+      moveCat('left');
+    });
+
+    rightButton.addEventListener('touchstart', (event) => {
+      event.preventDefault();
+      moveCat('right');
+    });
+
+
+
+    function gameLoop() {
+      const ball = createBall();
+
+      // Запускаем проверку столкновения с интервалом
+      const checkInterval = setInterval(() => {
+        if (checkScoreZone(ball)) {
+          score++;
+          scoreValue.textContent = score;
+          clearInterval(checkInterval); // Останавливаем проверку
+          ball.remove();
+        }
+      }, 20); // Проверяем каждые 20 миллисекунд
+
+      // Если шарик долетел до конца, удаляем его и останавливаем проверку
+      ball.addEventListener('animationend', () => {
+        clearInterval(checkInterval);
+        ball.remove();
+      });
+
+
+      setTimeout(gameLoop, Math.random() * 1000 + 500);
+    }
+
+    gameLoop();
+
+  </script>
+</body>
+</html>
