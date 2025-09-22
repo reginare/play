@@ -62,7 +62,7 @@
     let catPosition = 0;
     const moveSpeed = 15;
     let score = 0;
-    const catHeight = 40; // Предполагаемая высота кошки (равна font-size)
+    const catHeight = 40; // Высота кошки
 
 
     function createBall() {
@@ -74,32 +74,29 @@
       ball.style.animationDuration = randomDuration + 's';
       gameContainer.appendChild(ball);
 
-      ball.addEventListener('animationend', () => {
-        ball.remove();
-      });
+      // Добавляем признак того, что шарик еще не пересек зону кошки.
+      ball.crossed = false;
 
       return ball;
     }
 
 
-    //  Функция, проверяющая, пересек ли шарик траекторию кошки.
     function checkScoreZone(ball) {
       const ballRect = ball.getBoundingClientRect();
       const catRect = cat.getBoundingClientRect();
 
-      //  Высота линии, где находится кошка (bottom кошки)
+      // Высота линии, где находится кошка
       const catLineY = catRect.bottom;
 
-      //  Проверяем, что шарик находится в зоне кошки по Y-координате.
-      // Шарик должен быть ниже верхней границы кошки и не ниже нижней границы.
-      const isInScoreZoneY = ballRect.top <= catLineY && ballRect.bottom >= (catLineY - catHeight) ;
+      // Проверяем, находится ли шарик в зоне кошки по Y-координате.
+      const isInScoreZoneY = ballRect.top <= catLineY && ballRect.bottom >= (catLineY - catHeight);
 
-      //  Проверяем, что шарик находится в зоне кошки по X-координате.
-      //Шарик должен находиться в пределах левой и правой границы кошки
+      // Проверяем, находится ли шарик в зоне кошки по X-координате.
       const isInScoreZoneX = ballRect.right > catRect.left && ballRect.left < catRect.right;
 
-      return isInScoreZoneY;
+      return isInScoreZoneY && isInScoreZoneX;
     }
+
 
 
     document.addEventListener('keydown', (event) => {
@@ -122,20 +119,19 @@
     function gameLoop() {
       const ball = createBall();
 
-      ball.addEventListener('animationiteration', () => { //Check iteration
-        if (checkScoreZone(ball)) {
+      //  Проверяем, пересек ли шарик траекторию кошки
+      ball.addEventListener('animationiteration', () => {
+        if (!ball.crossed && checkScoreZone(ball)) { //Проверяем чтобы очко начислилось только один раз
           score++;
           scoreValue.textContent = score;
+          ball.crossed = true; // Запоминаем, что шарик уже пересек зону
           ball.remove();
         }
+
       });
 
-      ball.addEventListener('animationstart', () => {  // Check start
-        if (checkScoreZone(ball)) {
-          score++;
-          scoreValue.textContent = score;
-          ball.remove();
-        }
+      ball.addEventListener('animationend', () => {
+         ball.remove();  // удаляем шарик при завершении анимации, даже если он не принес очко
       });
 
       setTimeout(gameLoop, Math.random() * 1000 + 500);
