@@ -9,7 +9,7 @@
       position: relative;
       border: 1px solid black;
       overflow: hidden;
-      margin: 0 auto;
+      margin: 0 auto; /* Центрируем контейнер */
     }
 
     #cat {
@@ -24,9 +24,10 @@
 
     .ball {
       position: absolute;
-      width: 60px;
-      height: 60px;
+      width: 60px; /* Увеличиваем размер шарика в 3 раза */
+      height: 60px; /* Увеличиваем размер шарика в 3 раза */
       border-radius: 50%;
+      /* Ярко-розовый градиент */
       background: linear-gradient(to bottom, #FF69B4, #FF1493);
       top: 0;
       animation: fall linear;
@@ -35,7 +36,7 @@
 
     @keyframes fall {
       to {
-        transform: translateY(100vh);
+        transform: translateY(calc(100vh + 60px)); /* Шарики уходят за границу */
       }
     }
 
@@ -79,7 +80,7 @@
     const gameContainer = document.getElementById('game-container');
     const cat = document.getElementById('cat');
     const scoreValue = document.getElementById('score-value');
-    const leftButton = document.getElementByIdleft-button');
+    const leftButton = document.getElementById('left-button');
     const rightButton = document.getElementById('right-button');
 
     let catPosition = 0;
@@ -90,94 +91,9 @@
     function createBall() {
       const ball = document.createElement('div');
       ball.classList.add('ball');
-      const randomX = Math.random() * (gameContainer.offsetWidth - 60); // 60 - ширина шарика
+      const randomX = Math.random() * (gameContainer.offsetWidth - 60);
       ball.style.left = randomX + 'px';
       const randomDuration = Math.random() * 2 + 3;
       ball.style.animationDuration = randomDuration + 's';
       gameContainer.appendChild(ball);
-
-      return ball;
-    }
-
-    function checkScoreZone(ball) {
-      const ballRect = ball.getBoundingClientRect();
-      const catRect = cat.getBoundingClientRect();
-
-      // Нижняя линия кошки
-          const catLineY = catRect.bottom;
-
-      // Проверка по вертикали: шарик пересекает зону кошки
-      const isInScoreZoneY = ballRect.top <= catLineY && ballRect.bottom >= (catLineY - catHeight);
-
-      // Проверка по горизонтали: шарик в пределах ширины кошки
-      const isInScoreZoneX = ballRect.right > catRect.left && ballRect.left < catRect.right;
-
-      return isInScoreZoneY && isInScoreZoneX;
-    }
-
-    function moveCat(direction) {
-      if (direction === 'right') {
-        catPosition += moveSpeed;
-      } else if (direction === 'left') {
-        catPosition -= moveSpeed;
-      }
-
-      const containerWidth = gameContainer.offsetWidth;
-      const catWidth = cat.offsetWidth;
-      const minPosition = -catWidth / 2;
-      const maxPosition = containerWidth - catWidth / 2;
-
-      catPosition = Math.max(minPosition, Math.min(catPosition, maxPosition));
-      cat.style.left = catPosition + 'px';
-      cat.style.transform = 'translateX(0)';
-    }
-
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'ArrowRight') {
-        moveCat('right');
-      } else if (event.key === 'ArrowLeft') {
-        moveCat('left');
-      }
-    });
-
-
-    leftButton.addEventListener('touchstart', (event) => {
-      event.preventDefault();
-      moveCat('left');
-    });
-
-    rightButton.addEventListener('touchstart', (event) => {
-      event.preventDefault();
-      moveCat('right');
-    });
-
-
-
-    function gameLoop() {
-      const ball = createBall();
-
-      // Запускаем проверку столкновения с интервалом
-      const checkInterval = setInterval(() => {
-        if (checkScoreZone(ball)) {
-          score++;
-          scoreValue.textContent = score;
-          clearInterval(checkInterval); // Останавливаем проверку
-          ball.remove();
-        }
-      }, 20); // Проверяем каждые 20 миллисекунд
-
-      // Если шарик долетел до конца, удаляем его и останавливаем проверку
-      ball.addEventListener('animationend', () => {
-        clearInterval(checkInterval);
-        ball.remove();
-      });
-
-
-      setTimeout(gameLoop, Math.random() * 1000 + 500);
-    }
-
-    gameLoop();
-
-  </script>
-</body>
-</html>
+      // Устанавливаем обработчик события здесь
