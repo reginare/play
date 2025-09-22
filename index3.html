@@ -97,3 +97,95 @@
       ball.style.animationDuration = randomDuration + 's';
       gameContainer.appendChild(ball);
       // Устанавливаем обработчик события здесь
+      ball.addEventListener('animationend', () => {
+        ball.remove();
+      });
+      return ball;
+    }
+
+    function checkScoreZone(ball) {
+      const ballRect = ball.getBoundingClientRect();
+      const catRect = cat.getBoundingClientRect();
+
+      // Нижняя линия кошки
+      const catLineY = catRect.bottom;
+
+      // Проверка по вертикали: шарик пересекает зону кошки
+      const isInScoreZoneY = ballRect.top <= catLineY && ballRect.bottom >= (catLineY - catHeight);
+
+      // Проверка по горизонтали: шарик в пределах ширины кошки
+      const isInScoreZoneX = ballRect.right > catRect.left && ballRect.left < catRect.right;
+
+      return isInScoreZoneY && isInScoreZoneX;
+    }
+
+    function moveCat(direction) {
+      if (direction === 'right') {
+        catPosition += moveSpeed;
+      } else if (direction === 'left') {
+        catPosition -= moveSpeed;
+      }
+
+      const containerWidth = gameContainer.offsetWidth;
+      const catWidth = cat.offsetWidth;
+      const minPosition = -catWidth / 2;
+      const maxPosition = containerWidth - catWidth / 2;
+
+      catPosition = Math.max(minPosition, Math.min(catPosition, maxPosition));
+      cat.style.left = catPosition + 'px';
+      cat.style.transform = 'translateX(0)';
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') {
+        moveCat('right');
+      } else if (event.key === 'ArrowLeft') {
+        moveCat('left');
+      }
+    });
+
+    leftButton.addEventListener('touchstart', (event) => {
+      event.preventDefault(); // Предотвращаем скролл страницы при нажатии
+      moveCat('left');
+    });
+
+    leftButton.addEventListener('mousedown', (event) => {
+        moveCat('left');
+    });
+
+
+    rightButton.addEventListener('touchstart', (event) => {
+      event.preventDefault(); // Предотвращаем скролл страницы при нажатии
+      moveCat('right');
+    });
+
+    rightButton.addEventListener('mousedown', (event) => {
+        moveCat('right');
+    });
+
+
+    function gameLoop() {
+      const ball = createBall();
+
+      const checkInterval = setInterval(() => {
+        if (checkScoreZone(ball)) {
+          score++;
+          scoreValue.textContent = score;
+          clearInterval(checkInterval);
+          ball.remove();
+        }
+      }, 20);
+
+      ball.addEventListener('animationend', () => {
+        clearInterval(checkInterval);
+        ball.remove();
+      });
+
+      setTimeout(gameLoop, Math.random() * 1000 + 500);
+    }
+
+    gameLoop();
+
+  </script>
+</body>
+</html>
