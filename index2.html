@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Кошечка и Шарики</title>
+  <style>
+    #game-container {
+      width: 800px;
+      height: 600px;
+      position: relative;
+      border: 1px solid black;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+
+    #cat {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 40px; /* Размер кошечки */
+      z-index: 2;
+      color: #333; /* Цвет кошечки */
+    }
+
+    .ball {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: red;
+      top: 0;
+      animation: fall linear;
+      z-index: 1;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh);
+      }
+    }
+
+    #score {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="score">Счет: <span id="score-value">0</span></div>
+
+  <div id="game-container">
+    <div id="cat">🐈</div>
+  </div>
+
+  <script>
+    const gameContainer = document.getElementById('game-container');
+    const cat = document.getElementById('cat');
+    const scoreValue = document.getElementById('score-value');
+
+    let catPosition = 0;
+    const moveSpeed = 15; // Увеличиваем скорость для символа
+    let score = 0;
+
+    function createBall() {
+      const ball = document.createElement('div');
+      ball.classList.add('ball');
+      const randomX = Math.random() * (gameContainer.offsetWidth - 20);
+      ball.style.left = randomX + 'px';
+      const randomDuration = Math.random() * 2 + 3;
+      ball.style.animationDuration = randomDuration + 's';
+      gameContainer.appendChild(ball);
+
+      ball.addEventListener('animationend', () => {
+        ball.remove();
+      });
+
+      return ball;
+    }
+
+    function checkCollision(ball) {
+      const catRect = cat.getBoundingClientRect();
+      const ballRect = ball.getBoundingClientRect();
+
+      return !(catRect.right < ballRect.left ||
+               catRect.left > ballRect.right ||
+               catRect.bottom < ballRect.top ||
+               catRect.top > ballRect.bottom);
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') {
+        catPosition += moveSpeed;
+      } else if (event.key === 'ArrowLeft') {
+        catPosition -= moveSpeed;
+      }
+
+      const containerWidth = gameContainer.offsetWidth;
+      const catWidth = cat.offsetWidth; // Получаем ширину элемента cat
+      const minPosition = -catWidth / 2;
+      const maxPosition = containerWidth - catWidth / 2;
+
+
+      catPosition = Math.max(minPosition, Math.min(catPosition, maxPosition));
+      cat.style.left = catPosition + 'px';
+      cat.style.transform = 'translateX(0)';
+    });
+
+    function gameLoop() {
+      const ball = createBall();
+
+      setTimeout(() => {
+        if (checkCollision(ball)) {
+          score++;
+          scoreValue.textContent = score;
+          ball.remove();
+        }
+      }, 50);
+
+      setTimeout(gameLoop, Math.random() * 1000 + 500);
+    }
+
+    gameLoop();
+
+  </script>
+</body>
+</html>
