@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Кошечка и Шарики</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #87CEEB, #1E90FF);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #game-container {
+      width: 800px;
+      height: 600px;
+      position: relative;
+      border: 3px solid #333;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 0 auto;
+      background: linear-gradient(to bottom, #E0F7FA, #B3E5FC);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    #cat {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 40px;
+      z-index: 2;
+      color: #333;
+      transition: left 0.1s ease;
+    }
+
+    .ball {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(to bottom, #FF69B4, #FF1493);
+      top: 0;
+      animation: fall linear;
+      z-index: 1;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh);
+      }
+    }
+
+    #score {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      background-color: rgba(0, 0, 0, 0.3);
+      padding: 10px 20px;
+      border-radius: 10px;
+      width: 800px;
+      box-sizing: border-box;
+    }
+
+    #lives {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 15px;
+      gap: 10px;
+    }
+
+    .heart {
+      font-size: 30px;
+      color: #FF5252;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    #game-over {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 30px;
+      border-radius: 15px;
+      text-align: center;
+      z-index: 10;
+      display: none;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+    }
+
+    #game-over h2 {
+      font-size: 48px;
+      margin: 0 0 20px;
+      color: #FF5252;
+    }
+
+    #game-over p {
+      font-size: 24px;
+      margin: 10px 0;
+    }
+
+    #restart-button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 12px 30px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 18px;
+      margin: 20px 0 0;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    #restart-button:hover {
+      background-color: #45a049;
+    }
+
+    #missed-counter {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 18px;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 5px 10px;
+      border-radius: 5px;
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="score">Счет: <span id="score-value">0</span></div>
+  
+  <div id="lives">
+    <span class="heart">❤️</span>
+    <span class="heart">❤️</span>
+    <span class="heart">❤️</span>
+  </div>
+
+  <div id="game-container">
+    <div id="missed-counter">Пропущено: <span id="missed-value">0</span>/10</div>
+    <div id="cat">🐈</div>
+    
+    <div id="game-over">
+      <h2>GAME OVER</h2>
+      <p>Ваш счет: <span id="final-score">0</span></p>
+      <button id="restart-button">Играть снова</button>
+    </div>
+  </div>
+
+  <script>
+    const gameContainer = document.getElementById('game-container');
+    const cat = document.getElementById('cat');
+    const scoreValue = document.getElementById('score-value');
+    const missedValue = document.getElementById('missed-value');
+    const gameOverScreen = document.getElementById('game-over');
+    const finalScore = document.getElementById('final-score');
+    const restartButton = document.getElementById('restart-button');
+    const hearts = document.querySelectorAll('.heart');
+
+    let catPosition = 0;
+    const moveSpeed = 15;
+    let score = 0;
+    let missed = 0;
+    let lives = 3;
+    const catHeight = 40;
+    let gameActive = true;
+    let balls = [];
+    let ballCreationInterval;
+    let checkInterval;
+
+    function createBall() {
+      if (!gameActive) return;
+      
+      const ball = document.createElement('div');
+      ball.classList.add('ball');
+      const randomX = Math.random() * (gameContainer.offsetWidth - 60);
+      ball.style.left = randomX + 'px';
+      const randomDuration = Math.random() * 2 + 3;
+      ball.style.animationDuration = randomDuration + 's';
+      gameContainer.appendChild(ball);
+
+      // Сохраняем информацию о шарике
+      const ballInfo = {
+        element: ball,
+        caught: false
+      };
+      balls.push(ballInfo);
+
+      // Удаляем шарик после завершения анимации
+      ball.addEventListener('animationend', () => {
+        if (!ballInfo.caught) {
+          missed++;
+          missedValue.textContent = missed;
+          
+          // Проверяем, не достигли ли мы предела пропущенных шариков
+          if (missed >= 10) {
+            loseLife();
+          }
+        }
+        ball.remove();
+        // Удаляем шарик из массива
+        const index = balls.indexOf(ballInfo);
+        if (index > -1) {
+          balls.splice(index, 1);
+        }
+      });
+
+      return ballInfo;
+    }
+
+    function checkScoreZone(ball) {
+      const ballRect = ball.element.getBoundingClientRect();
+      const catRect = cat.getBoundingClientRect();
+
+      // Нижняя линия кошки
+      const catLineY = catRect.bottom;
+
+      // Проверка по вертикали: шарик пересекает зону кошки
+      const isInScoreZoneY = ballRect.top <= catLineY && ballRect.bottom >= (catLineY - catHeight);
+
+      // Проверка по горизонтали: шарик в пределах ширины кошки
+      const isInScoreZoneX = ballRect.right > catRect.left && ballRect.left < catRect.right;
+
+      return isInScoreZoneY && isInScoreZoneX;
+    }
+
+    function loseLife() {
+      if (!gameActive) return;
+      
+      lives--;
+      missed = 0;
+      missedValue.textContent = missed;
+      
+      // Обновляем отображение жизней
+      hearts.forEach((heart, index) => {
+        if (index >= lives) {
+          heart.style.opacity = '0.3';
+        }
+      });
+      
+      if (lives <= 0) {
+        endGame();
+      }
+    }
+
+    function endGame() {
+      gameActive = false;
+      finalScore.textContent = score;
+      gameOverScreen.style.display = 'block';
+      
+      // Останавливаем создание шариков
+      clearInterval(ballCreationInterval);
+      clearInterval(checkInterval);
+    }
+
+    function restartGame() {
+      // Сбрасываем все переменные
+      score = 0;
+      missed = 0;
+      lives = 3;
+      gameActive = true;
+      
+      // Обновляем отображение
+      scoreValue.textContent = score;
+      missedValue.textContent = missed;
+      
+      // Восстанавливаем отображение жизней
+      hearts.forEach(heart => {
+        heart.style.opacity = '1';
+      });
+      
+      // Удаляем все шарики
+      balls.forEach(ball => {
+        ball.element.remove();
+      });
+      balls = [];
+      
+      // Скрываем экран окончания игры
+      gameOverScreen.style.display = 'none';
+      
+      // Запускаем игру снова
+      startGame();
+    }
+
+    function startGame() {
+      // Создаем шарики с интервалом
+      ballCreationInterval = setInterval(() => {
+        if (gameActive) {
+          createBall();
+        }
+      }, 800);
+      
+      // Проверяем столкновения
+      checkInterval = setInterval(() => {
+        if (!gameActive) return;
+        
+        for (let i = balls.length - 1; i >= 0; i--) {
+          const ball = balls[i];
+          if (!ball.caught && checkScoreZone(ball)) {
+            score++;
+            scoreValue.textContent = score;
+            ball.caught = true;
+            ball.element.remove();
+            balls.splice(i, 1);
+          }
+        }
+      }, 50);
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (!gameActive) return;
+      
+      if (event.key === 'ArrowRight') {
+        catPosition += moveSpeed;
+      } else if (event.key === 'ArrowLeft') {
+      catPosition -= moveSpeed;
+      }
+
+      const containerWidth = gameContainer.offsetWidth;
+      const catWidth = cat.offsetWidth;
+      const minPosition = -catWidth / 2;
+      const maxPosition = containerWidth - catWidth / 2;
+
+      catPosition = Math.max(minPosition, Math.min(catPosition, maxPosition));
+      cat.style.left = catPosition + 'px';
+      cat.style.transform = 'translateX(0)';
+    });
+
+    restartButton.addEventListener('click', restartGame);
+
+    // Запускаем игру при загрузке страницы
+    startGame();
+
+  </script>
+</body>
+</html>
