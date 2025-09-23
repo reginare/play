@@ -33,14 +33,14 @@
       position: absolute;
       bottom: 0;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translateX(-50%) translateY(0);
       font-size: 40px;
       z-index: 2;
       color: #333;
       user-select: none;
       text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-  transition: transform 0.3s ease;
-}
+        transition: transform 0.3s ease;
+
     }
 
     .ice-cream {
@@ -139,7 +139,24 @@
 
     const iceCreamEmojis = ["🍷", "🍕", "🍤", "🍔"]; // Список эмодзи мороженого
 
+let isJumping = false;
 
+function jumpCat() {
+  if (isJumping) return; // не запускаем, если уже прыгает
+  isJumping = true;
+
+  cat.style.transform = 'translateX(-50%) translateY(-60px)';
+
+  setTimeout(() => {
+    cat.style.transform = 'translateX(-50%) translateY(0)';
+  }, 300);
+
+  setTimeout(() => {
+    isJumping = false;
+  }, 600);
+}
+
+    
     function createIceCream() {
       const iceCream = document.createElement('div');
       iceCream.classList.add('ice-cream');
@@ -184,22 +201,6 @@
       cat.style.transform = 'translateX(0)';
     }
 
-    function jumpCat() {
-      if (isJumping) return; // Если уже прыгает, не запускаем новый прыжок
-      isJumping = true;
-      cat.style.transition = 'transform 0.2s ease';
-      cat.style.transform = `translateX(0) translateY(-60px)`;
-
-      setTimeout(() => {
-        cat.style.transform = `translateX(0) translateY(0)`;
-      }, 200);
-
-      setTimeout(() => {
-        cat.style.transition = '';
-        isJumping = false;
-      }, 400);
-    }
-
     document.addEventListener('keydown', (event) => {
       if (event.key === 'ArrowRight') {
         moveCat('right');
@@ -223,20 +224,15 @@
     function gameLoop() {
       const iceCream = createIceCream();
 
-// Если поймали именно вино (🍷), котик подпрыгивает
-          if (iceCream.textContent === "🍷") {
-            jumpCat();
-          }
-
-          clearInterval(checkInterval);
-          iceCream.remove();
-        }
-      }, 20);
-
       const checkInterval = setInterval(() => {
         if (checkScoreZone(iceCream)) {
           score++;
           scoreValue.textContent = score;
+          // iceCream — элемент пойманного эмодзи
+if (iceCream.textContent === '🍷') {
+  jumpCat();
+}
+
           clearInterval(checkInterval);
           iceCream.remove();
         }
