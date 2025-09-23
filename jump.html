@@ -33,7 +33,7 @@
       position: absolute;
       bottom: 0;
       left: 50%;
-      transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) rotate(0deg);
       font-size: 40px;
       z-index: 2;
       color: #333;
@@ -139,22 +139,22 @@
 
     const iceCreamEmojis = ["🍷", "🍕", "🍤", "🍔"]; // Список эмодзи мороженого
 
-let isJumping = false;
+let isFlipping = false;
 
-function jumpCat() {
-  if (isJumping) return; // не запускаем, если уже прыгает
-  isJumping = true;
+function flipCat() {
+  if (isFlipping) return; // не запускаем, если уже в процессе переворота
+  isFlipping = true;
 
-  cat.style.transform = 'translateX(-50%) translateY(-200px)';
+  // Вращаем котика на 360 градусов
+  cat.style.transform = 'translateX(-50%) rotate(360deg)';
 
+  // После окончания анимации сбрасываем transform и флаг
   setTimeout(() => {
-    cat.style.transform = 'translateX(-50%) translateY(0)';
-  }, 300);
-
-  setTimeout(() => {
-    isJumping = false;
+    cat.style.transform = 'translateX(-50%) rotate(0deg)';
+    isFlipping = false;
   }, 600);
 }
+
 
     
     function createIceCream() {
@@ -230,7 +230,7 @@ function jumpCat() {
           scoreValue.textContent = score;
           // iceCream — элемент пойманного эмодзи
 if (iceCream.textContent === '🍷') {
-  jumpCat();
+  flipCat();
 }
 
           clearInterval(checkInterval);
