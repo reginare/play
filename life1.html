@@ -231,7 +231,7 @@
     let balls = [];
     //let ballCreationInterval;
     //let checkInterval;
-    const iceCreamEmojis = ["🍷", "🍕", "👻", "🍔", "🍉", "🍰", "🍺"]; // Список эмодзи мороженого
+    const ballEmojis = ["🍷", "🍕", "👻", "🍔", "🍉", "🍰", "🍺"]; // Список эмодзи мороженого
 
 let isFlipping = false;
 
@@ -247,20 +247,20 @@ function flipCat() {
   }, 600);
 }
     
-    function createIceCream() {
+    function createball() {
             if (!gameActive) return;
-      const iceCream = document.createElement('div');
-      iceCream.classList.add('ice-cream');
-      iceCream.textContent = iceCreamEmojis[Math.floor(Math.random() * iceCreamEmojis.length)]; // Выбираем случайное мороженое
+      const ball = document.createElement('div');
+      ball.classList.add('ice-cream');
+      ball.textContent = ballEmojis[Math.floor(Math.random() * ballEmojis.length)]; // Выбираем случайное мороженое
       const randomX = Math.random() * (gameContainer.offsetWidth - 60);
-      iceCream.style.left = randomX + 'px';
+      ball.style.left = randomX + 'px';
       const randomDuration = Math.random() * 2 + 3;
-      iceCream.style.animationDuration = randomDuration + 's';
-      gameContainer.appendChild(iceCream);
+      ball.style.animationDuration = randomDuration + 's';
+      gameContainer.appendChild(ball);
 
         // Сохраняем информацию о шарике
       const ballInfo = {
-        element: iceCream,
+        element: ball,
         caught: false
       };
       balls.push(ballInfo);
@@ -276,7 +276,7 @@ function flipCat() {
             loseLife();
           }
         }
-        iceCream.remove();
+        ball.remove();
         // Удаляем шарик из массива
         const index = balls.indexOf(ballInfo);
         if (index > -1) {
@@ -286,18 +286,18 @@ function flipCat() {
 
       return ballInfo;
     }
-    //  iceCream.addEventListener('animationend', () => {
-     //   iceCream.remove();
+    //  ball.addEventListener('animationend', () => {
+     //   ball.remove();
     //  });
-    //  return iceCream;
+    //  return ball;
     }
 
-    function checkScoreZone(iceCream) {
-      const iceCreamRect = iceCream.getBoundingClientRect();
+    function checkScoreZone(ball) {
+      const ballRect = ball.getBoundingClientRect();
       const catRect = cat.getBoundingClientRect();
       const catLineY = catRect.bottom;
-      const isInScoreZoneY = iceCreamRect.top <= catLineY && iceCreamRect.bottom >= (catLineY - catHeight);
-      const isInScoreZoneX = iceCreamRect.right > catRect.left && iceCreamRect.left < catRect.right;
+      const isInScoreZoneY = ballRect.top <= catLineY && ballRect.bottom >= (catLineY - catHeight);
+      const isInScoreZoneX = ballRect.right > catRect.left && ballRect.left < catRect.right;
       return isInScoreZoneY && isInScoreZoneX;
     }
 
@@ -423,31 +423,31 @@ function flipCat() {
     rightButton.addEventListener('mousedown', () => moveCat('right'));
 
     function gameLoop() {
-      const iceCream = createIceCream();
+      const ball = createball();
 
       const checkInterval = setInterval(() => {
-        if (checkScoreZone(iceCream)) {
+        if (checkScoreZone(ball)) {
           score++;
           scoreValue.textContent = score;
-          // iceCream — элемент пойманного эмодзи
-if (iceCream.textContent === '👻') {
+          // ball — элемент пойманного эмодзи
+if (ball.textContent === '👻') {
   pizzaSound.currentTime = 0;  // Чтобы звук воспроизводился с начала, если вызов повторяется быстро
   pizzaSound.play();
 }
 
           
-          if (iceCream.textContent === '🍷') {
+          if (ball.textContent === '🍷') {
   flipCat();
 }
 
           clearInterval(checkInterval);
-          iceCream.remove();
+          ball.remove();
         }
       }, 20);
 
-      iceCream.addEventListener('animationend', () => {
+      ball.addEventListener('animationend', () => {
         clearInterval(checkInterval);
-        iceCream.remove();
+        ball.remove();
       });
 
       setTimeout(gameLoop, Math.random() * 1000 + 500);
