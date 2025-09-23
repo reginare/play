@@ -229,8 +229,8 @@
     const catHeight = 40; // Высота кошки (font-size)
     let gameActive = true;
     let balls = [];
-    //let ballCreationInterval;
-    //let checkInterval;
+    let ballCreationInterval;
+    let checkInterval;
     const ballEmojis = ["🍷", "🍕", "👻", "🍔", "🍉", "🍰", "🍺"]; // Список эмодзи мороженого
 
 let isFlipping = false;
@@ -286,10 +286,10 @@ function flipCat() {
 
       return ballInfo;
     }
-    //  ball.addEventListener('animationend', () => {
-     //   ball.remove();
-    //  });
-    //  return ball;
+     ball.addEventListener('animationend', () => {
+        ball.remove();
+     });
+     return ball;
     }
 
     function checkScoreZone(ball) {
