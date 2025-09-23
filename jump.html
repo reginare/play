@@ -33,7 +33,7 @@
       position: absolute;
       bottom: 0;
       left: 50%;
-  transform: translateX(-50%) rotate(0deg);
+  transform: translateX(-50%) translateY(0) rotate(0deg);
       font-size: 40px;
       z-index: 2;
       color: #333;
@@ -146,11 +146,11 @@ function flipCat() {
   isFlipping = true;
 
   // Вращаем котика на 360 градусов
-  cat.style.transform = 'translateX(-50%) rotate(360deg)';
+  cat.style.transform = 'translateX(-50%) translateY(-60px) rotate(360deg)';
 
   // После окончания анимации сбрасываем transform и флаг
   setTimeout(() => {
-    cat.style.transform = 'translateX(-50%) rotate(0deg)';
+    cat.style.transform = 'translateX(-50%) translateY(0) rotate(0deg)';
     isFlipping = false;
   }, 600);
 }
