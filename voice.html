@@ -140,7 +140,7 @@
     let score = 0;
     const catHeight = 40; // Высота кошки (font-size)
 
-    const iceCreamEmojis = ["🍷", "🍕", "🍤", "🍔", "🍉", "🍰", "🍺"]; // Список эмодзи мороженого
+    const iceCreamEmojis = ["🍷", "🍕", "👻", "🍔", "🍉", "🍰", "🍺"]; // Список эмодзи мороженого
 
 let isFlipping = false;
 
@@ -232,7 +232,7 @@ function flipCat() {
           score++;
           scoreValue.textContent = score;
           // iceCream — элемент пойманного эмодзи
-if (iceCream.textContent === '🍔') {
+if (iceCream.textContent === '👻') {
   pizzaSound.currentTime = 0;  // Чтобы звук воспроизводился с начала, если вызов повторяется быстро
   pizzaSound.play();
 }
