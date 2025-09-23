@@ -33,12 +33,14 @@
       position: absolute;
       bottom: 0;
       left: 50%;
-      transform: translateX(-50%);
+  transform: translateX(-50%) translateY(0) rotate(0deg);
       font-size: 40px;
       z-index: 2;
       color: #333;
       user-select: none;
       text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        transition: transform 0.3s ease;
+
     }
 
     .ice-cream {
@@ -122,13 +124,16 @@
     <button class="button" id="left-button">Влево</button>
     <button class="button" id="right-button">Вправо</button>
   </div>
-
+<audio id="voice_1" src="https://github.com/reginare/play/blob/main/voice_1.mp3" preload="auto"></audio>
+  
   <script>
     const gameContainer = document.getElementById('game-container');
     const cat = document.getElementById('cat');
     const scoreValue = document.getElementById('score-value');
     const leftButton = document.getElementById('left-button');
     const rightButton = document.getElementById('right-button');
+    const pizzaSound = document.getElementById('pizza-sound');
+
 
     let catPosition = 0;
     const moveSpeed = 15;
@@ -137,7 +142,24 @@
 
     const iceCreamEmojis = ["🍷", "🍕", "🍤", "🍔"]; // Список эмодзи мороженого
 
+let isFlipping = false;
 
+function flipCat() {
+  if (isFlipping) return; // не запускаем, если уже в процессе переворота
+  isFlipping = true;
+
+  // Вращаем котика на 1080 градусов
+  cat.style.transform = 'translateX(-50%) translateY(-250px) rotate(3600deg)';
+
+  // После окончания анимации сбрасываем transform и флаг
+  setTimeout(() => {
+    cat.style.transform = 'translateX(-50%) translateY(0) rotate(0deg)';
+    isFlipping = false;
+  }, 600);
+}
+
+
+    
     function createIceCream() {
       const iceCream = document.createElement('div');
       iceCream.classList.add('ice-cream');
@@ -209,6 +231,17 @@
         if (checkScoreZone(iceCream)) {
           score++;
           scoreValue.textContent = score;
+          // iceCream — элемент пойманного эмодзи
+if (iceCream.textContent === '🍕') {
+  pizzaSound.currentTime = 0;  // Чтобы звук воспроизводился с начала, если вызов повторяется быстро
+  pizzaSound.play();
+}
+
+          
+          if (iceCream.textContent === '🍷') {
+  flipCat();
+}
+
           clearInterval(checkInterval);
           iceCream.remove();
         }
