@@ -69,48 +69,7 @@
       margin-top: 15px;
       user-select: none;
     }
-
-    #controls {
-      text-align: center;
-      margin-top: 20px;
-      user-select: none;
-    }
-
-    .button {
-      padding: 12px 25px;
-      font-size: 20px;
-      background-color: #ff2d85;
-      color: white;
-      border: none;
-      border-radius: 30px;
-      cursor: pointer;
-      margin: 0 15px;
-      box-shadow: 0 5px 15px rgba(255,45,133,0.6);
-      transition: background-color 0.3s ease;
-      user-select: none;
-      outline: none;
-    }
-
-    .button:hover,
-    .button:active {
-      background-color: #ff1a6f;
-    }
-
-    /* Для мобильных устройств увеличим кнопки */
-    @media (max-width: 500px) {
-      #game-container {
-        width: 95vw;
-        height: 70vh;
-      }
-      .button {
-        font-size: 24px;
-        padding: 15px 30px;
-        margin: 0 10px;
-      }        font-size: 30px;
-      }
-
-    }
-#lives {
+    #lives {
       display: flex;
       justify-content: center;
       margin-bottom: 15px;
@@ -179,23 +138,68 @@
       border-radius: 5px;
       z-index: 5;
     }
-  </style>
+    
+    #controls {
+      text-align: center;
+      margin-top: 20px;
+      user-select: none;
+    }
 
+    .button {
+      padding: 12px 25px;
+      font-size: 20px;
+      background-color: #ff2d85;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      margin: 0 15px;
+      box-shadow: 0 5px 15px rgba(255,45,133,0.6);
+      transition: background-color 0.3s ease;
+      user-select: none;
+      outline: none;
+    }
+
+    .button:hover,
+    .button:active {
+      background-color: #ff1a6f;
+    }
+
+    /* Для мобильных устройств увеличим кнопки */
+    @media (max-width: 500px) {
+      #game-container {
+        width: 95vw;
+        height: 70vh;
+      }
+      .button {
+        font-size: 24px;
+        padding: 15px 30px;
+        margin: 0 10px;
+      }        font-size: 30px;
+      }
+
+    }
+  </style>
 </head>
 <body>
 <audio id="voice_1" src="https://raw.githubusercontent.com/reginare/play/main/voice_1.mp3" preload="auto"></audio>
 
   <div id="score">Счет: <span id="score-value">0</span></div>
+  
+  <div id="lives">
+    <span class="heart">❤️</span>
+    <span class="heart">❤️</span>
+    <span class="heart">❤️</span>
+  </div>
 
   <div id="game-container">
-    <div id="missed-counter">Пропущено: <span id="missed-value">0</span>/10</div>
-
+        <div id="missed-counter">Пропущено: <span id="missed-value">0</span>/10</div>
     <div id="cat">🐈</div>
- <div id="game-over">
+        <div id="game-over">
       <h2>GAME OVER</h2>
       <p>Ваш счет: <span id="final-score">0</span></p>
       <button id="restart-button">Играть снова</button>
-    </div>
+
   </div>
 
   <div id="controls">
@@ -207,7 +211,7 @@
     const gameContainer = document.getElementById('game-container');
     const cat = document.getElementById('cat');
     const scoreValue = document.getElementById('score-value');
-const missedValue = document.getElementById('missed-value');
+        const missedValue = document.getElementById('missed-value');
     const gameOverScreen = document.getElementById('game-over');
     const finalScore = document.getElementById('final-score');
     const restartButton = document.getElementById('restart-button');
@@ -218,13 +222,15 @@ const missedValue = document.getElementById('missed-value');
 
 
     let catPosition = 0;
-    const moveSpeed = 15;
+    const moveSpeed = 12;
     let score = 0;
- let missed = 0;
+    let missed = 0;
     let lives = 3;
-    let iceCreams = [];
     const catHeight = 40; // Высота кошки (font-size)
-
+    let gameActive = true;
+    let balls = [];
+    //let ballCreationInterval;
+    //let checkInterval;
     const iceCreamEmojis = ["🍷", "🍕", "👻", "🍔", "🍉", "🍰", "🍺"]; // Список эмодзи мороженого
 
 let isFlipping = false;
@@ -232,21 +238,17 @@ let isFlipping = false;
 function flipCat() {
   if (isFlipping) return; // не запускаем, если уже в процессе переворота
   isFlipping = true;
-
   // Вращаем котика на 1080 градусов
   cat.style.transform = 'translateX(-50%) translateY(-250px) rotate(3600deg)';
-
   // После окончания анимации сбрасываем transform и флаг
   setTimeout(() => {
     cat.style.transform = 'translateX(-50%) translateY(0) rotate(0deg)';
     isFlipping = false;
   }, 600);
 }
-
-
     
     function createIceCream() {
-      if (!gameActive) return;
+            if (!gameActive) return;
       const iceCream = document.createElement('div');
       iceCream.classList.add('ice-cream');
       iceCream.textContent = iceCreamEmojis[Math.floor(Math.random() * iceCreamEmojis.length)]; // Выбираем случайное мороженое
@@ -256,16 +258,16 @@ function flipCat() {
       iceCream.style.animationDuration = randomDuration + 's';
       gameContainer.appendChild(iceCream);
 
- // Сохраняем информацию о шарике
-      const iceCreamInfo = {
+        // Сохраняем информацию о шарике
+      const ballInfo = {
         element: iceCream,
         caught: false
       };
-      iceCreams.push(iceCreamInfo);
+      balls.push(ballInfo);
 
       // Удаляем шарик после завершения анимации
-      iceCream.addEventListener('animationend', () => {
-        if (!iceCreamInfo.caught) {
+      ball.addEventListener('animationend', () => {
+        if (!ballInfo.caught) {
           missed++;
           missedValue.textContent = missed;
           
@@ -276,28 +278,30 @@ function flipCat() {
         }
         iceCream.remove();
         // Удаляем шарик из массива
-        const index = iceCreams.indexOf(ballInfo);
+        const index = balls.indexOf(ballInfo);
         if (index > -1) {
-          iceCreams.splice(index, 1);
+          balls.splice(index, 1);
         }
       });
-      return iceCreamInfo;
-    }
 
+      return ballInfo;
+    }
+    //  iceCream.addEventListener('animationend', () => {
+     //   iceCream.remove();
+    //  });
+    //  return iceCream;
+    }
 
     function checkScoreZone(iceCream) {
       const iceCreamRect = iceCream.getBoundingClientRect();
       const catRect = cat.getBoundingClientRect();
-
       const catLineY = catRect.bottom;
-
       const isInScoreZoneY = iceCreamRect.top <= catLineY && iceCreamRect.bottom >= (catLineY - catHeight);
       const isInScoreZoneX = iceCreamRect.right > catRect.left && iceCreamRect.left < catRect.right;
-
       return isInScoreZoneY && isInScoreZoneX;
     }
 
-function loseLife() {
+    function loseLife() {
       if (!gameActive) return;
       
       lives--;
@@ -322,7 +326,7 @@ function loseLife() {
       gameOverScreen.style.display = 'block';
       
       // Останавливаем создание шариков
-      clearInterval(iceCreamCreationInterval);
+      clearInterval(ballCreationInterval);
       clearInterval(checkInterval);
     }
 
@@ -343,10 +347,10 @@ function loseLife() {
       });
       
       // Удаляем все шарики
-      iceCreams.forEach(ball => {
-        iceCreams.element.remove();
+      balls.forEach(ball => {
+        ball.element.remove();
       });
-      iceCreams = [];
+      balls = [];
       
       // Скрываем экран окончания игры
       gameOverScreen.style.display = 'none';
@@ -357,13 +361,30 @@ function loseLife() {
 
     function startGame() {
       // Создаем шарики с интервалом
-      iceCreamCreationInterval = setInterval(() => {
+      ballCreationInterval = setInterval(() => {
         if (gameActive) {
           createBall();
         }
       }, 800);
       
+      // Проверяем столкновения
+      checkInterval = setInterval(() => {
+        if (!gameActive) return;
+        
+        for (let i = balls.length - 1; i >= 0; i--) {
+          const ball = balls[i];
+          if (!ball.caught && checkScoreZone(ball)) {
+            score++;
+            scoreValue.textContent = score;
+            ball.caught = true;
+            ball.element.remove();
+            balls.splice(i, 1);
+          }
+        }
+      }, 50);
+    }
 
+    
     function moveCat(direction) {
       if (direction === 'right') {
         catPosition += moveSpeed;
